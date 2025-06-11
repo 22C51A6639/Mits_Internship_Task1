@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>MITS Internship Portal</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      padding: 2rem;
+      background-color: #f9f9f9;
+    }
+    h1 {
+      text-align: center;
+      margin-bottom: 2rem;
+    }
+    .form-container {
+      background: white;
+      padding: 1.5rem;
+      margin: 1rem auto;
+      border-radius: 8px;
+      max-width: 500px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    }
+    input, button {
+      display: block;
+      width: 100%;
+      padding: 0.6rem;
+      margin-top: 0.5rem;
+      margin-bottom: 1rem;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+    }
+    button {
+      background-color: #007bff;
+      color: white;
+      cursor: pointer;
+    }
+    button:disabled {
+      background-color: #999;
+    }
+    .success {
+      color: green;
+    }
+    .error {
+      color: red;
+    }
+    .spinner {
+      display: inline-block;
+      width: 16px;
+      height: 16px;
+      border: 2px solid #f3f3f3;
+      border-top: 2px solid #007bff;
+      border-radius: 50%;
+      animation: spin 0.7s linear infinite;
+      margin-left: 5px;
+    }
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+  </style>
+</head>
+<body>
+
+  <h1>MITS Internship Portal</h1>
+
+  <!-- Internship Application Form -->
+  <div class="form-container">
+    <h2>Internship Application</h2>
+    <form id="applicationForm">
+      <input type="text" id="name" placeholder="Full Name" required />
+      <input type="email" id="email" placeholder="Email" required />
+      <input type="text" id="college" placeholder="College Name" required />
+      <button type="submit" id="applyBtn">Apply</button>
+      <p id="appStatus"></p>
+    </form>
+  </div>
+
+  <!-- Offer Letter Generation Form -->
+  <div class="form-container">
+    <h2>Generate Offer Letter</h2>
+    <form id="offerForm">
+      <input type="text" id="userId" placeholder="User ID" required />
+      <input type="text" id="position" placeholder="Internship Position" required />
+      <button type="submit" id="generateBtn">Generate</button>
+      <p id="offerStatus"></p>
+    </form>
+  </div>
+
+  <script>
+    // Internship Application Submission
+    document.getElementById('applicationForm').addEventListener('submit', async function (e) {
+      e.preventDefault();
+      const applyBtn = document.getElementById('applyBtn');
+      const status = document.getElementById('appStatus');
+      applyBtn.disabled = true;
+      status.innerHTML = 'Submitting... <span class="spinner"></span>';
+
+      const data = {
+        name: document.getElementById('name').value,
+        email: document.getElementById('email').value,
+        college: document.getElementById('college').value
+      };
+
+      try {
+        const res = await fetch('http://localhost:5000/api/application', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(data),
+          credentials: 'include'
+        });
+        const result = await res.json();
+        if (res.ok) {
+          status.innerHTML = `<span class="success">${result.message || 'Application submitted!'}</span>`;
+          document.getElementById('applicationForm').reset();
+        } else {
+          throw new Error(result.message || 'Submission failed.');
+        }
+      } catch (err) {
+        status.innerHTML = `<span class="error">${err.message}</span>`;
+      } finally {
+        applyBtn.disabled = false;
+      }
+    });
+
+    // Offer Letter Generation Submission
+    document.getElementById('offerForm').addEventListener('submit', async function (e) {
+      e.preventDefault();
+      const generateBtn = document.getElementById('generateBtn');
+      const status = document.getElementById('offerStatus');
+      generateBtn.disabled = true;
+      status.innerHTML = 'Generating... <span class="spinner"></span>';
+
+      const data = {
+        userId: document.getElementById('userId').value,
+        position: document.getElementById('position').value
+      };
+
+      try {
+        const res = await fetch('http://localhost:5000/api/offer-letter', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(data),
+          credentials: 'include'
+        });
+        const result = await res.json();
+        if (res.ok) {
+          status.innerHTML = `<span class="success">${result.message || 'Offer letter generated!'}</span>`;
+          document.getElementById('offerForm').reset();
+        } else {
+          throw new Error(result.message || 'Failed to generate offer letter.');
+        }
+      } catch (err) {
+        status.innerHTML = `<span class="error">${err.message}</span>`;
+      } finally {
+        generateBtn.disabled = false;
+      }
+    });
+  </script>
+
+</body>
+</html>
